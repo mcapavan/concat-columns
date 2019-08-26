@@ -2,52 +2,36 @@
 Concat CSV columns along with timestamp in Spark
 
 
-#### Create Sample CSV file
-
-```bash
-cd /tmp
-
-echo "c1, c2, c3, c4, c5, c6, c7, c8, c9" >> myfile.csv
-echo "r11, r12, r13, r14, r15, r16, r17, r18, r19" >> myfile.csv
-echo "r21, r22, r23, r24, r25, r26, r27, r28, r29" >> myfile.csv
-echo "r31, r32, r33, r34, r35, r36, r37, r38, r39" >> myfile.csv
-
-cat /tmp/myfile.csv
-
-c1, c2, c3, c4, c5, c6, c7, c8, c9
-r11, r12, r13, r14, r15, r16, r17, r18, r19
-r21, r22, r23, r24, r25, r26, r27, r28, r29
-r31, r32, r33, r34, r35, r36, r37, r38, r39
-```
-
-#### Open pySpark
-
-```bash
-[root@demo harsha]# pyspark
-
-SparkSession available as 'spark'.
->>>
-
-```
-
-### Load CSV file (myfile.csv) into RDD
-
-rdd = sc.textFile("file:///tmp/myfile.csv")
-
-rdd.collect()
-
+### Case_study.csv file
 
 #### Load CSV into Spark Dataframe
 
-df = spark.read.format("csv").option("header", "true").load("file:///tmp/myfile.csv")
+df = spark.read.format("csv").option("header", "true").load("file:///tmp/case_study.csv")
 
 df.registerTempTable("df")
 
 df.show()
 
-#### Add current timestamp
+#### Import Pyspark SQL functions - col(), when(), lit() 
 from pyspark.sql import functions as f
+
+### Concatinate Phone Numbers Columns and email columns and current_timestamp
+
+df = df.withColumn('phone_number', f.concat(
+    f.when(f.col('phone_number_1').isNull(), f.lit('')).otherwise(f.col('phone_number_1')),
+    f.when(f.col('phone_number_2').isNull(), f.lit('')).otherwise(f.col('phone_number_2')),
+    f.when(f.col('phone_number_3').isNull(), f.lit('')).otherwise(f.col('phone_number_3'))
+    ))
+
+df = df.withColumn('email_id', f.concat(
+    f.when(f.col('email_1').isNull(), f.lit('')).otherwise(f.col('email_1')),
+    f.when(f.col('email_2').isNull(), f.lit('')).otherwise(f.col('email_2'))
+    ))
+    
 df = df.withColumn('currenttimestamp', f.current_timestamp())
-df.show()
+
+df.select('id', 'first_name', 'last_name', 'phone_number', 'email_id', 'created_at', 'currenttimestamp').show()
+
+
 
 
