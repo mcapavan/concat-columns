@@ -37,5 +37,17 @@ rdd = sc.textFile("file:///tmp/myfile.csv")
 rdd.collect()
 
 
+#### Load CSV into Spark Dataframe
+
+df = spark.read.format("csv").option("header", "true").load("file:///tmp/myfile.csv")
+
+df.registerTempTable("df")
+
+df.show()
+
+#### Add current timestamp
+from pyspark.sql import functions as f
+df = df.withColumn('currenttimestamp', f.current_timestamp())
+df.show()
 
 
